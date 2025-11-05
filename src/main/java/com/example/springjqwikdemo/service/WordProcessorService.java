@@ -1,4 +1,4 @@
-package be.wegenenverkeer.springjqwikdemo.service;
+package com.example.springjqwikdemo.service;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,65 +1,452 @@
 # Spring Boot jqwik Demo
 
-A simple Spring Boot web server demonstrating property-based testing with jqwik.
+Een uitgebreide demonstratieproject dat **jqwik** toont - een property-based testing framework voor Java.
 
-## Features
+Dit project demonstreert hoe je jqwik gebruikt voor property-based testing in een Spring Boot applicatie, met gedetailleerde voorbeelden en uitleg van jqwik features.
 
-- **GET /api/health**: Health check endpoint
-- **POST /api/words**: Processes an array of strings and returns an array of strings
+## Wat is jqwik?
 
-## Business Logic
+**jqwik** is een property-based testing framework voor Java ge?nspireerd door QuickCheck (Haskell) en vergelijkbare frameworks. In plaats van tests te schrijven met vaste voorbeelddata, beschrijf je **properties** (eigenschappen) die moeten gelden voor alle geldige inputs, en jqwik genereert automatisch honderden testgevallen.
 
-The POST endpoint processes input strings:
-- Searches for the words "aardappel" (9 letters) or "pieper" (6 letters)
-- For each occurrence of these words, outputs the word length times the word "friet"
-- Example: `["aardappel"]` ? `["friet", "friet", "friet", "friet", "friet", "friet", "friet", "friet", "friet"]`
-- Example: `["pieper"]` ? `["friet", "friet", "friet", "friet", "friet", "friet"]`
+### Waarom Property-Based Testing?
 
-## Development Setup
+Traditionele voorbeeld-gebaseerde tests:
+```java
+@Test
+void testWithAardappel() {
+    List<String> input = List.of("aardappel");
+    List<String> result = service.processWords(input);
+    assertEquals(9, result.size());
+}
+```
 
-### Using Nix Flake (Recommended)
+Property-based tests met jqwik:
+```java
+@Property
+void propertyHoldsForAllInputs(@ForAll List<String> input) {
+    // jqwik genereert 100+ willekeurige inputs en verifieert
+    // dat de property geldt voor ALLE inputs
+    List<String> result = service.processWords(input);
+    // Assert property die moet gelden voor alle inputs
+}
+```
 
-If you have Nix installed, you can use the flake to get a development environment with Java 21 and Maven:
+**Voordelen:**
+- Test automatisch veel meer scenario's
+- Ontdekt edge cases die je misschien niet bedenkt
+- Verifieert dat properties gelden voor alle geldige inputs
+- Vermindert onderhoudslast van tests
+- Vindt bugs die handmatige tests missen
+
+## Aan de slag
+
+### Vereisten
+
+- Java 21
+- Maven 3.6+
+
+### Setup met Nix (Aanbevolen)
 
 ```bash
 nix develop
 ```
 
-This will provide you with Java 21 and Maven in your shell.
+Dit biedt Java 21 en Maven in je shell.
 
-### Manual Setup
+### Handmatige Setup
 
-Ensure you have:
-- Java 21
-- Maven 3.6+
+Zorg dat je Java 21 en Maven 3.6+ ge?nstalleerd hebt.
 
-## Running the Application
+## Applicatie draaien
 
 ```bash
+# Met Nix
+nix develop --command mvn spring-boot:run
+
+# Of handmatig
 mvn spring-boot:run
 ```
 
-The server will start on port 8080.
+De server start op poort 8080.
 
-## Testing
-
-The project includes comprehensive jqwik property-based tests:
-
-- **WordProcessorServiceTest**: Tests the business logic with various random inputs
-- **SnackbarControllerTest**: Tests the REST endpoints with MockMvc
-
-Run tests with:
+## Tests draaien
 
 ```bash
+# Met Nix
+nix develop --command mvn test
+
+# Of handmatig
 mvn test
 ```
 
-## Property-Based Testing with jqwik
+## jqwik Gebruiksgids
 
-The tests use jqwik to generate random test data and verify properties hold for all inputs:
+Deze sectie legt jqwik features uit met concrete voorbeelden uit dit project.
 
-- Tests verify correct behavior with random combinations of words
-- Ensures "aardappel" always produces 9 "friet" entries
-- Ensures "pieper" always produces 6 "friet" entries
-- Verifies empty results when no target words are present
-- Tests multiple occurrences and combinations
+### 1. Basis Property-Based Testing
+
+De eenvoudigste jqwik test gebruikt `@Property` en `@ForAll`:
+
+```java
+@Property
+void propertyBasedTest_GeneratesRandomListsWithSizeConstraint(
+    @ForAll @Size(min = 0, max = 10) List<String> otherWords) {
+    // Given - jqwik genereert willekeurige lijsten van strings
+    List<String> input = new ArrayList<>(otherWords);
+    input.add("aardappel");
+
+    // When
+    List<String> result = service.processWords(input);
+
+    // Then - Property moet gelden voor ALLE gegenereerde inputs
+    assertThat(result).hasSize(9);
+    assertThat(result).containsOnly("friet");
+}
+```
+
+**Wat gebeurt er:**
+- `@Property` vertelt jqwik dat dit een property-based test is
+- `@ForAll` vertelt jqwik om willekeurige data te genereren voor deze parameter
+- `@Size(min = 0, max = 10)` beperkt de lijstgrootte
+- jqwik draait deze test **100 keer** (standaard) met verschillende willekeurige inputs
+- De property moet gelden voor **alle** gegenereerde inputs
+
+**Zie:** `SnackbarServiceTest.propertyBasedTest_GeneratesRandomListsWithSizeConstraint()`
+
+### 2. Meerdere Parameters en Combinaties
+
+jqwik genereert combinaties van meerdere parameters:
+
+```java
+@Property
+void propertyBasedTest_MultipleParametersGenerateCombinations(
+    @ForAll @Size(min = 0, max = 5) List<String> otherWords,
+    @ForAll @Size(min = 1, max = 5) List<String> aardappels) {
+    // jqwik genereert ALLE combinaties van beide lijsten
+    List<String> input = new ArrayList<>(otherWords);
+    aardappels.forEach(word -> input.add("aardappel"));
+
+    List<String> result = service.processWords(input);
+    
+    // Property geldt voor alle combinaties
+    int expectedSize = aardappels.size() * 9;
+    assertThat(result).hasSize(expectedSize);
+}
+```
+
+**Wat gebeurt er:**
+- jqwik genereert combinaties van `otherWords` en `aardappels`
+- Elke parameter wordt onafhankelijk gegenereerd
+- Tests dekken veel meer scenario's dan handmatige voorbeelden
+
+**Zie:** `SnackbarServiceTest.propertyBasedTest_MultipleParametersGenerateCombinations()`
+
+### 3. Aangepaste Arbitraries met @Provide
+
+Maak aangepaste data generators voor domein-specifieke testdata:
+
+```java
+@Property
+void propertyBasedTest_CustomArbitraryWithFilter(
+    @ForAll @Size(min = 0, max = 20) List<@From("nonTargetWords") String> input) {
+    // jqwik gebruikt onze aangepaste arbitrary om gefilterde woorden te genereren
+    List<String> result = service.processWords(input);
+    assertThat(result).isEmpty();
+}
+
+@Provide
+Arbitrary<String> nonTargetWords() {
+    return Arbitraries.strings()
+        .alpha()
+        .ofMinLength(1)
+        .ofMaxLength(20)
+        .filter(word -> !word.equals("aardappel") && !word.equals("pieper"));
+}
+```
+
+**Wat gebeurt er:**
+- `@Provide` cre?ert een aangepaste data generator
+- `@From("nonTargetWords")` vertelt jqwik om deze generator te gebruiken
+- Je kunt arbitraries filteren, transformeren en combineren
+- Perfect voor domein-specifieke testdata
+
+**Zie:** `SnackbarServiceTest.propertyBasedTest_CustomArbitraryWithFilter()`
+
+### 4. Automatische Domein Object Generatie
+
+jqwik kan automatisch domeinobjecten genereren met `ArbitraryProvider`:
+
+```java
+@Property
+void propertyBasedTest_AutomaticDomainObjectGeneration(@ForAll Pataten pataten) {
+    // jqwik genereert automatisch Pataten instanties!
+    // Geen handmatige testdata creatie nodig
+    List<String> result = service.frituren(List.of(pataten));
+    
+    assertThat(result).isNotEmpty();
+    assertThat(result).allMatch(s -> s.equals("gefrituurde aardappelportie"));
+}
+```
+
+**Hoe het werkt:**
+1. Maak een `ArbitraryProvider` die `net.jqwik.api.providers.ArbitraryProvider` implementeert
+2. Registreer deze in `META-INF/services/net.jqwik.api.providers.ArbitraryProvider`
+3. jqwik gebruikt deze automatisch wanneer het `@ForAll Pataten` tegenkomt
+
+**Voorbeeld Provider:**
+```java
+public class DomainArbitraryProvider implements ArbitraryProvider {
+    @Override
+    public boolean canProvideFor(TypeUsage targetType) {
+        return targetType.isOfType(Pataten.class);
+    }
+
+    @Override
+    public Set<Arbitrary<?>> provideFor(TypeUsage targetType, ...) {
+        if (targetType.isOfType(Pataten.class)) {
+            return Collections.singleton(
+                Arbitraries.integers()
+                    .between(10, 200)
+                    .map(Pataten::new)
+            );
+        }
+        return Collections.emptySet();
+    }
+}
+```
+
+**Zie:** 
+- `SnackbarServiceFrituurbaarTest.propertyBasedTest_AutomaticDomainObjectGeneration()`
+- `src/test/java/com/example/springjqwikdemo/property/DomainArbitraryProvider.java`
+
+### 5. Testen van Collecties van Domeinobjecten
+
+jqwik kan lijsten van domeinobjecten genereren:
+
+```java
+@Property
+void propertyBasedTest_CollectionsOfDomainObjects(
+    @ForAll @Size(min = 1, max = 10) List<Frituurbaar> items) {
+    // jqwik genereert lijsten van gemengde snack types
+    List<String> result = service.frituren(items);
+    
+    assertThat(result).isNotEmpty();
+    assertThat(result.size()).isGreaterThanOrEqualTo(items.size());
+}
+```
+
+**Wat gebeurt er:**
+- jqwik genereert lijsten van `Frituurbaar` objecten
+- Elk object wordt gegenereerd met de `DomainArbitraryProvider`
+- Lijstgrootte wordt beperkt door `@Size`
+- Tests dekken automatisch veel combinaties
+
+**Zie:** `SnackbarServiceFrituurbaarTest.propertyBasedTest_CollectionsOfDomainObjects()`
+
+### 6. Deterministische Voorbeelden met @Example
+
+Soms wil je deterministische voorbeelden naast property tests:
+
+```java
+@Example
+@Label("Deterministisch voorbeeld: Typische snackbar bestelling")
+void deterministicExample_TypicalOrder() {
+    // Given - Vaste, deterministische testdata
+    List<Frituurbaar> order = List.of(
+        new Pataten(100),
+        new Frikandellen(3),
+        new Kroketten(Krokettype.KAAS, 2)
+    );
+
+    // When
+    List<String> result = service.frituren(order);
+
+    // Then - Verifieer verwacht gedrag
+    assertThat(result).contains("gefrituurde aardappelportie");
+    assertThat(result).contains("gefrituurde frikandel");
+}
+```
+
+**Gebruiksvoorbeelden:**
+- Documentatiedoeleinden
+- Zorgen dat specifieke scenario's werken
+- Leesbare voorbeelden van verwacht gedrag bieden
+- Regressietests voor bekende bugs
+
+**Zie:** `SnackbarServiceFrituurbaarTest.deterministicExample_TypicalOrder()`
+
+### 7. Filteren van Testgevallen met @Assume
+
+Sla testgevallen over die niet aan je criteria voldoen:
+
+```java
+@Property
+void propertyBasedTest_AssumeFiltersTestCases(
+    @ForAll @Size(min = 0, max = 10) List<String> otherWords) {
+    List<String> input = new ArrayList<>(otherWords);
+
+    // @Assume filtert gevallen eruit die we niet willen testen
+    // jqwik genereert nieuwe data als de assumptie faalt
+    Assume.that(!input.contains("aardappel"));
+    Assume.that(!input.contains("pieper"));
+
+    // Test alleen gevallen die de assumptie doorstaan
+    List<String> result = service.processWords(input);
+    assertThat(result).isEmpty();
+}
+```
+
+**Wat gebeurt er:**
+- Als de assumptie faalt, genereert jqwik nieuwe data
+- Alleen testgevallen die de assumptie doorstaan worden uitgevoerd
+- Handig voor het testen van specifieke scenario's zonder handmatige filtering
+
+**Zie:** `SnackbarControllerTest.propertyBasedTest_AssumeFiltersTestCases()`
+
+### 8. Spring Boot Integratie
+
+jqwik integreert met Spring Boot met `@JqwikSpringSupport`:
+
+```java
+@JqwikSpringSupport
+@WebMvcTest(SnackbarController.class)
+@PropertyDefaults(tries = 50, generation = GenerationMode.RANDOMIZED)
+class SnackbarControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Property
+    void propertyBasedTest_RestEndpointWithGeneratedData(
+        @ForAll @Size(min = 0, max = 3) List<String> input) throws Exception {
+        
+        String requestBody = objectMapper.writeValueAsString(input);
+
+        // Test REST endpoint met gegenereerde data
+        mockMvc.perform(
+            post("/api/bakken")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+            .andExpect(status().isOk());
+    }
+}
+```
+
+**Belangrijke punten:**
+- `@JqwikSpringSupport` schakelt jqwik in binnen Spring test context
+- Gebruik `@Autowired` zoals normaal
+- Genereer HTTP request bodies met jqwik
+- Test REST API's met property-based testing
+
+**Zie:** `SnackbarControllerTest`
+
+### 9. Configuratie Opties
+
+Configureer jqwik gedrag met `@PropertyDefaults`:
+
+```java
+@PropertyDefaults(
+    tries = 100,                    // Aantal test runs
+    generation = GenerationMode.RANDOMIZED,  // RANDOMIZED of EXHAUSTIVE
+    edgeCases = EdgeCasesMode.FIRST, // Wanneer edge cases proberen
+    shrinking = ShrinkingMode.FULL   // Hoe falende gevallen te minimaliseren
+)
+class MyTest {
+    // ...
+}
+```
+
+**Configuratie opties:**
+- `tries`: Aantal willekeurige testgevallen (standaard: 1000)
+- `generation`: Hoe data te genereren (RANDOMIZED of EXHAUSTIVE)
+- `edgeCases`: Wanneer edge cases proberen (FIRST, MIXIN, of NONE)
+- `shrinking`: Hoe falende gevallen te minimaliseren (FULL, OFF, of BOUNDED)
+
+## Overzicht Testbestanden
+
+Dit project bevat drie testbestanden die verschillende jqwik features demonstreren:
+
+### SnackbarServiceTest
+**Locatie:** `src/test/java/com/example/springjqwikdemo/service/SnackbarServiceTest.java`
+
+**Demonstreert:**
+- Basis `@Property` en `@ForAll` gebruik
+- `@Size` constraints voor collecties
+- Aangepaste arbitraries met `@Provide` en `@From`
+- Meerdere parameter combinaties
+
+### SnackbarServiceFrituurbaarTest
+**Locatie:** `src/test/java/com/example/springjqwikdemo/service/SnackbarServiceFrituurbaarTest.java`
+
+**Demonstreert:**
+- Automatische domeinobject generatie via `DomainArbitraryProvider`
+- Testen met sealed interfaces en records
+- `@Example` voor deterministische testgevallen
+- Collecties van domeinobjecten
+
+### SnackbarControllerTest
+**Locatie:** `src/test/java/com/example/springjqwikdemo/controller/SnackbarControllerTest.java`
+
+**Demonstreert:**
+- `@JqwikSpringSupport` voor Spring Boot integratie
+- Property-based testing van REST endpoints
+- `@Assume` voor het filteren van testgevallen
+- Testen van HTTP API's met gegenereerde data
+
+## Belangrijke jqwik Annotaties
+
+| Annotatie | Doel | Voorbeeld |
+|-----------|------|-----------|
+| `@Property` | Markeert een property-based test | `@Property void test(@ForAll String s)` |
+| `@ForAll` | Genereert willekeurige data | `@ForAll int number` |
+| `@Example` | Deterministisch testgeval | `@Example void example()` |
+| `@Provide` | Aangepaste data generator | `@Provide Arbitrary<String> words()` |
+| `@From` | Gebruik aangepaste arbitrary | `@From("words") String word` |
+| `@Size` | Beperk collectiegrootte | `@Size(min=1, max=10) List<String>` |
+| `@Label` | Leesbare testnaam | `@Label("Test beschrijving")` |
+
+## Best Practices
+
+1. **Beschrijf properties, niet voorbeelden**
+   - Focus op wat altijd waar moet zijn
+   - Laat jqwik de voorbeelden vinden
+
+2. **Gebruik betekenisvolle property namen**
+   - Noem tests naar de property die wordt getest
+   - Gebruik `@Label` voor leesbare beschrijvingen
+
+3. **Maak aangepaste arbitraries voor domeinobjecten**
+   - Gebruik `ArbitraryProvider` voor automatische generatie
+   - Maakt tests leesbaarder en onderhoudbaarder
+
+4. **Combineer property tests met voorbeelden**
+   - Gebruik `@Property` voor brede dekking
+   - Gebruik `@Example` voor specifieke scenario's
+
+5. **Gebruik `@Assume` spaarzaam**
+   - Geef voorkeur aan filtering in arbitraries waar mogelijk
+   - `@Assume` is voor runtime condities
+
+6. **Configureer tries op basis van testsnelheid**
+   - Snelle tests: 1000+ tries
+   - Langzame tests: 50-100 tries
+   - Balanceer dekking vs. uitvoeringstijd
+
+## API Documentatie
+
+Voor gedetailleerde API documentatie, zie [docs/api.md](docs/api.md).
+
+## Business Logica
+
+De applicatie demonstreert jqwik testing met een eenvoudige snackbar service:
+
+- **POST /api/bakken**: Verwerkt strings, converteert "aardappel" en "pieper" naar "friet"
+- **POST /api/frituren**: Verwerkt snack objecten (JSON) en genereert gefrituurde snack beschrijvingen
+
+Het domeinmodel gebruikt sealed interfaces (`Frituurbaar`) met records voor verschillende snack types.
+
+## Verder Lezen
+
+- [jqwik Documentatie](https://jqwik.net/)
+- [Property-Based Testing Gids](https://jqwik.net/docs/current/user-guide.html)
+- [jqwik Voorbeelden](https://github.com/jqwik-team/jqwik/tree/main/src/test/java/net/jqwik)

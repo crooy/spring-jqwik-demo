@@ -1,6 +1,6 @@
-package be.wegenenverkeer.springjqwikdemo.property;
+package com.example.springjqwikdemo.property;
 
-import be.wegenenverkeer.springjqwikdemo.domain.*;
+import com.example.springjqwikdemo.domain.*;
 import java.util.Collections;
 import java.util.Set;
 import net.jqwik.api.Arbitrary;

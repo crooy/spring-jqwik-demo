@@ -9,7 +9,7 @@
     <version>3.5.0</version>
     <relativePath/> <!-- lookup parent from repository -->
   </parent>
-  <groupId>be.wegenenverkeer</groupId>
+  <groupId>com.example</groupId>
   <artifactId>spring-jqwik-demo</artifactId>
   <version>0.0.1</version>
   <name>spring-jqwik-demo</name>

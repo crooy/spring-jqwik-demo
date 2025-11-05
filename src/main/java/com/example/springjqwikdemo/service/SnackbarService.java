@@ -1,6 +1,6 @@
-package be.wegenenverkeer.springjqwikdemo.service;
+package com.example.springjqwikdemo.service;
 
-import be.wegenenverkeer.springjqwikdemo.domain.*;
+import com.example.springjqwikdemo.domain.*;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -22,6 +22,20 @@ public class SnackbarService {
       if (word != null && (word.equals("aardappel") || word.equals("pieper"))) {
         int length = word.length();
         for (int i = 0; i < length; i++) {
+          result.add("friet");
+        }
+      }
+    }
+    return result;
+  }
+
+  public List<String> processSnacks(List<Frituurbaar> items) {
+    List<String> result = new ArrayList<>();
+    for (Frituurbaar item : items) {
+      if (item instanceof Pataten pataten) {
+        // Use the size of aardappels (Pataten) to generate friet
+        int size = pataten.size();
+        for (int i = 0; i < size; i++) {
           result.add("friet");
         }
       }

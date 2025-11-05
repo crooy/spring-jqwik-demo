@@ -1,3 +1,3 @@
-package be.wegenenverkeer.springjqwikdemo.domain;
+package com.example.springjqwikdemo.domain;
 
 public record Pataten(int size) implements Frituurbaar {}

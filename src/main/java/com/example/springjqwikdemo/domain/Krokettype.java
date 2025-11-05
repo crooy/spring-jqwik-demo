@@ -1,4 +1,4 @@
-package be.wegenenverkeer.springjqwikdemo.domain;
+package com.example.springjqwikdemo.domain;
 
 public enum Krokettype {
   KAAS,
