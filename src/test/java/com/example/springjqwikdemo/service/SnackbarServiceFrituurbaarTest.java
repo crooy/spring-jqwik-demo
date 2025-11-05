@@ -136,4 +136,69 @@ class SnackbarServiceFrituurbaarTest {
       case GEZOND -> "gezonde";
     };
   }
+
+  /**
+   * Demonstreert: SHRINKING met domeinobjecten in bestaande test
+   *
+   * Deze test laat zien hoe jqwik automatisch domeinobjecten shrinkt wanneer een test faalt.
+   *
+   * SHRINKING DEMO:
+   * Als je deze test runt (verwijder @Disabled), zal jqwik:
+   * 1. Een Pataten object vinden met een grote size die faalt (bijv. size=157)
+   * 2. Automatisch het size veld SHRINKEN naar kleinere waarden
+   * 3. Rapporteren: Pataten(size=101) - de kleinste size die nog faalt
+   *
+   * Dit is krachtig omdat:
+   * - Je ziet precies de grenswaarde (100 vs 101)
+   * - Geldt ook voor complexe objecten met meerdere velden
+   * - jqwik shrinkt ALLE velden recursief
+   */
+  @Property
+  @org.junit.jupiter.api.Disabled("Demonstreert shrinking - verwijder @Disabled om falende test te zien")
+  @Label("SHRINKING DEMO: Domeinobjecten shrinken naar minimale falende waarde")
+  void demonstratesShrinking_DomainObjects(@ForAll Pataten pataten) {
+    // When - Frituur de pataten
+    List<String> result = service.frituren(List.of(pataten));
+
+    // Then - Deze property faalt voor Pataten met size > 100
+    // jqwik shrinkt automatisch naar Pataten(size=101)
+    int portions = Math.max(1, pataten.size() / 10);
+    assertThat(portions)
+        .as("jqwik shrinkt Pataten naar kleinste size die faalt: size=101")
+        .isLessThanOrEqualTo(10);
+
+    // Zonder shrinking: zie je "Test faalt met Pataten(size=187)"
+    // Met shrinking: zie je "Test faalt met Pataten(size=101)"
+    // Dit maakt de grenswaarde (100) meteen duidelijk!
+  }
+
+  /**
+   * Demonstreert: SHRINKING met lijsten van domeinobjecten
+   *
+   * Deze test toont hoe jqwik een lijst van complexe objecten shrinkt naar
+   * de minimale lijst die nog steeds faalt.
+   *
+   * SHRINKING DEMO:
+   * Test faalt met grote bestelling: [Pataten(100), Frikandellen(5), Kroketten(KAAS, 3), ...]
+   * jqwik shrinkt naar: [Pataten(110)] - het kleinste object dat het probleem triggert
+   */
+  @Property
+  @org.junit.jupiter.api.Disabled("Demonstreert shrinking - verwijder @Disabled om falende test te zien")
+  @Label("SHRINKING DEMO: Lijst van domeinobjecten shrinkt naar minimale falende lijst")
+  void demonstratesShrinking_ListOfDomainObjects(
+      @ForAll @Size(min = 1, max = 15) List<Frituurbaar> order) {
+    // When - Frituur de bestelling
+    List<String> result = service.frituren(order);
+
+    // Then - Test faalt als totaal > 30 items
+    // jqwik shrinkt de lijst EN de objecten erin naar minimale falende combinatie
+    assertThat(result.size())
+        .as("jqwik shrinkt naar kleinste bestelling die te veel items genereert")
+        .isLessThanOrEqualTo(30);
+
+    // Bijvoorbeeld:
+    // Origineel: [Pataten(150), Frikandellen(8), Kroketten(KAAS, 4), ...]
+    // Na shrinking: [Pataten(110)] of [Frikandellen(31)]
+    // Dit laat PRECIES zien welk type snack + welke hoeveelheid het probleem veroorzaakt!
+  }
 }

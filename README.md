@@ -340,7 +340,61 @@ class SnackbarControllerTest {
 
 **Zie:** `SnackbarControllerTest`
 
-### 9. Configuratie Opties
+### 9. Shrinking - Automatisch Minimaliseren van Falende Gevallen
+
+**Shrinking** is een van de krachtigste features van property-based testing. Als een test faalt, probeert jqwik automatisch een "kleiner" voorbeeld te vinden dat nog steeds faalt.
+
+**Waarom is dit belangrijk?**
+- In plaats van een complexe willekeurige waarde te zien die faalt, krijg je het **minimale voorbeeld**
+- Maakt debugging veel eenvoudiger
+- Helpt je precies begrijpen waar de bug ligt
+
+**Voorbeeld:**
+
+```java
+@Property
+@Disabled("Opzettelijk falende test om shrinking te demonstreren")
+void demonstratesShrinking(@ForAll @IntRange(min = 0, max = 1000) int value) {
+    // Test faalt voor waarden > 50
+    assertThat(value).isLessThanOrEqualTo(50);
+}
+```
+
+**Wat gebeurt er:**
+1. jqwik vindt een willekeurige falende waarde (bijv. 789)
+2. Probeert automatisch kleinere waarden: 394, 197, 98, 74, 62, 56, 53, 52, 51
+3. Rapporteert: **51** - de kleinste waarde die nog steeds faalt
+
+**Shrinking werkt voor:**
+- **Integers**: shrinkt naar 0, dan naar kleine waarden
+- **Strings**: shrinkt naar kortere strings met eenvoudige karakters
+- **Lijsten**: verwijdert elementen om kleinste falende lijst te vinden
+- **Domeinobjecten**: shrinkt recursief alle velden
+
+**Voorbeeld met lijsten:**
+
+```java
+@Property
+void demonstratesShrinking_Lists(@ForAll List<String> words) {
+    boolean containsTarget = words.contains("aardappel");
+    assertThat(containsTarget).isFalse();
+
+    // Als test faalt met: ["foo", "bar", "aardappel", "xyz", "test"]
+    // jqwik shrinkt naar: ["aardappel"] - minimale falende lijst!
+}
+```
+
+**Configuratie:**
+
+```java
+@Property(shrinking = ShrinkingMode.FULL)  // Volledige shrinking (standaard)
+@Property(shrinking = ShrinkingMode.BOUNDED)  // Sneller, minder grondig
+@Property(shrinking = ShrinkingMode.OFF)  // Geen shrinking (voor performance)
+```
+
+**Zie:** `SnackbarServiceShrinkingDemoTest` voor uitgebreide shrinking demonstraties
+
+### 10. Configuratie Opties
 
 Configureer jqwik gedrag met `@PropertyDefaults`:
 
@@ -364,7 +418,7 @@ class MyTest {
 
 ## Overzicht Testbestanden
 
-Dit project bevat drie testbestanden die verschillende jqwik features demonstreren:
+Dit project bevat vier testbestanden die verschillende jqwik features demonstreren:
 
 ### SnackbarServiceTest
 **Locatie:** `src/test/java/com/example/springjqwikdemo/service/SnackbarServiceTest.java`
@@ -374,6 +428,7 @@ Dit project bevat drie testbestanden die verschillende jqwik features demonstrer
 - `@Size` constraints voor collecties
 - Aangepaste arbitraries met `@Provide` en `@From`
 - Meerdere parameter combinaties
+- **Shrinking met strings en lijsten** (disabled tests - verwijder `@Disabled` om te zien)
 
 ### SnackbarServiceFrituurbaarTest
 **Locatie:** `src/test/java/com/example/springjqwikdemo/service/SnackbarServiceFrituurbaarTest.java`
@@ -383,6 +438,19 @@ Dit project bevat drie testbestanden die verschillende jqwik features demonstrer
 - Testen met sealed interfaces en records
 - `@Example` voor deterministische testgevallen
 - Collecties van domeinobjecten
+- **Shrinking met domeinobjecten** (disabled tests - verwijder `@Disabled` om te zien)
+
+### SnackbarServiceShrinkingDemoTest
+**Locatie:** `src/test/java/com/example/springjqwikdemo/service/SnackbarServiceShrinkingDemoTest.java`
+
+**Demonstreert:**
+- **Shrinking** - automatisch minimaliseren van falende gevallen
+- Shrinking met integers, strings, lijsten en domeinobjecten
+- Shrinking configuratie (`FULL`, `BOUNDED`, `OFF`)
+- Meerdere parameters tegelijk shrinken
+- Praktische debugging met shrinking
+
+**Let op:** Tests zijn `@Disabled` omdat ze opzettelijk falen om shrinking te demonstreren.
 
 ### SnackbarControllerTest
 **Locatie:** `src/test/java/com/example/springjqwikdemo/controller/SnackbarControllerTest.java`
@@ -415,19 +483,24 @@ Dit project bevat drie testbestanden die verschillende jqwik features demonstrer
    - Noem tests naar de property die wordt getest
    - Gebruik `@Label` voor leesbare beschrijvingen
 
-3. **Maak aangepaste arbitraries voor domeinobjecten**
+3. **Vertrouw op shrinking voor debugging**
+   - Laat shrinking standaard aanstaan (`ShrinkingMode.FULL`)
+   - Als een test faalt, krijg je automatisch het minimale voorbeeld
+   - Dit maakt debugging veel eenvoudiger
+
+4. **Maak aangepaste arbitraries voor domeinobjecten**
    - Gebruik `ArbitraryProvider` voor automatische generatie
    - Maakt tests leesbaarder en onderhoudbaarder
 
-4. **Combineer property tests met voorbeelden**
+5. **Combineer property tests met voorbeelden**
    - Gebruik `@Property` voor brede dekking
    - Gebruik `@Example` voor specifieke scenario's
 
-5. **Gebruik `@Assume` spaarzaam**
+6. **Gebruik `@Assume` spaarzaam**
    - Geef voorkeur aan filtering in arbitraries waar mogelijk
    - `@Assume` is voor runtime condities
 
-6. **Configureer tries op basis van testsnelheid**
+7. **Configureer tries op basis van testsnelheid**
    - Snelle tests: 1000+ tries
    - Langzame tests: 50-100 tries
    - Balanceer dekking vs. uitvoeringstijd
