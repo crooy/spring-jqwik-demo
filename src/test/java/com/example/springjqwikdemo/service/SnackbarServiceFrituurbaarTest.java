@@ -28,7 +28,7 @@ class SnackbarServiceFrituurbaarTest {
 
   /**
    * Demonstreert: Automatische domeinobject generatie
-   * 
+   *
    * jqwik genereert automatisch Pataten instanties met behulp van de DomainArbitraryProvider.
    * Geen handmatige testdata creatie nodig - jqwik regelt het!
    */
@@ -46,7 +46,7 @@ class SnackbarServiceFrituurbaarTest {
 
   /**
    * Demonstreert: Sealed interface subtypes werken met jqwik
-   * 
+   *
    * jqwik kan elk subtype van Frituurbaar genereren (Frikandellen, Kroketten, etc.)
    * dankzij de DomainArbitraryProvider configuratie.
    */
@@ -62,7 +62,7 @@ class SnackbarServiceFrituurbaarTest {
 
   /**
    * Demonstreert: Complexe domeinobjecten met meerdere velden
-   * 
+   *
    * jqwik genereert Kroketten met willekeurige type en count waarden,
    * en test automatisch alle combinaties.
    */
@@ -78,9 +78,9 @@ class SnackbarServiceFrituurbaarTest {
 
   /**
    * Demonstreert: Collecties van domeinobjecten
-   * 
+   *
    * jqwik genereert lijsten van Frituurbaar objecten met size constraints,
-   * en cre?ert automatisch gevarieerde testscenario's.
+   * en creëert automatisch gevarieerde testscenario's.
    */
   @Property
   void propertyBasedTest_CollectionsOfDomainObjects(
@@ -89,14 +89,14 @@ class SnackbarServiceFrituurbaarTest {
     List<String> result = service.frituren(items);
 
     // Then - Property geldt voor alle gegenereerde lijsten
-    // Elke snack moet minstens ??n resultaat opleveren
+    // Elke snack moet minstens één resultaat opleveren
     assertThat(result).isNotEmpty();
     assertThat(result.size()).isGreaterThanOrEqualTo(items.size());
   }
 
   /**
    * Demonstreert: @Example voor deterministische testgevallen
-   * 
+   *
    * @Example draait eenmaal met vaste data, handig voor:
    * - Documentatiedoeleinden
    * - Zorgen dat specifieke scenario's werken

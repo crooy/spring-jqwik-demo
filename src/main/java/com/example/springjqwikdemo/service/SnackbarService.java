@@ -14,7 +14,7 @@ public class SnackbarService {
       // Bug: Case-sensitive comparison - "Aardappel" or "AARDAPPEL" won't match
       // Bug: Empty strings pass the null check but have length 0
       // Bug: What about whitespace? " aardappel " won't match
-      // Bug: What about unicode variations? "aardappel" vs "??rd????l" (cyrillic a)
+      // Bug: What about unicode variations? "aardappel" vs "ааrdарреl" (cyrillic a)
       if (word != null && (word.equals("aardappel") || word.equals("pieper"))) {
         int length = word.length();
         for (int i = 0; i < length; i++) {

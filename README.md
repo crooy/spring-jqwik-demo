@@ -6,7 +6,7 @@ Dit project demonstreert hoe je jqwik gebruikt voor property-based testing in ee
 
 ## Wat is jqwik?
 
-**jqwik** is een property-based testing framework voor Java ge?nspireerd door QuickCheck (Haskell) en vergelijkbare frameworks. In plaats van tests te schrijven met vaste voorbeelddata, beschrijf je **properties** (eigenschappen) die moeten gelden voor alle geldige inputs, en jqwik genereert automatisch honderden testgevallen.
+**jqwik** is een property-based testing framework voor Java geïnspireerd door QuickCheck (Haskell) en vergelijkbare frameworks. In plaats van tests te schrijven met vaste voorbeelddata, beschrijf je **properties** (eigenschappen) die moeten gelden voor alle geldige inputs, en jqwik genereert automatisch honderden testgevallen.
 
 ### Waarom Property-Based Testing?
 
@@ -55,7 +55,7 @@ Dit biedt Java 21 en Maven in je shell.
 
 ### Handmatige Setup
 
-Zorg dat je Java 21 en Maven 3.6+ ge?nstalleerd hebt.
+Zorg dat je Java 21 en Maven 3.6+ geïnstalleerd hebt.
 
 ## Applicatie draaien
 
@@ -127,7 +127,7 @@ void propertyBasedTest_MultipleParametersGenerateCombinations(
     aardappels.forEach(word -> input.add("aardappel"));
 
     List<String> result = service.processWords(input);
-    
+
     // Property geldt voor alle combinaties
     int expectedSize = aardappels.size() * 9;
     assertThat(result).hasSize(expectedSize);
@@ -165,7 +165,7 @@ Arbitrary<String> nonTargetWords() {
 ```
 
 **Wat gebeurt er:**
-- `@Provide` cre?ert een aangepaste data generator
+- `@Provide` creëert een aangepaste data generator
 - `@From("nonTargetWords")` vertelt jqwik om deze generator te gebruiken
 - Je kunt arbitraries filteren, transformeren en combineren
 - Perfect voor domein-specifieke testdata
@@ -182,7 +182,7 @@ void propertyBasedTest_AutomaticDomainObjectGeneration(@ForAll Pataten pataten) 
     // jqwik genereert automatisch Pataten instanties!
     // Geen handmatige testdata creatie nodig
     List<String> result = service.frituren(List.of(pataten));
-    
+
     assertThat(result).isNotEmpty();
     assertThat(result).allMatch(s -> s.equals("gefrituurde aardappelportie"));
 }
@@ -215,7 +215,7 @@ public class DomainArbitraryProvider implements ArbitraryProvider {
 }
 ```
 
-**Zie:** 
+**Zie:**
 - `SnackbarServiceFrituurbaarTest.propertyBasedTest_AutomaticDomainObjectGeneration()`
 - `src/test/java/com/example/springjqwikdemo/property/DomainArbitraryProvider.java`
 
@@ -229,7 +229,7 @@ void propertyBasedTest_CollectionsOfDomainObjects(
     @ForAll @Size(min = 1, max = 10) List<Frituurbaar> items) {
     // jqwik genereert lijsten van gemengde snack types
     List<String> result = service.frituren(items);
-    
+
     assertThat(result).isNotEmpty();
     assertThat(result.size()).isGreaterThanOrEqualTo(items.size());
 }
@@ -319,7 +319,7 @@ class SnackbarControllerTest {
     @Property
     void propertyBasedTest_RestEndpointWithGeneratedData(
         @ForAll @Size(min = 0, max = 3) List<String> input) throws Exception {
-        
+
         String requestBody = objectMapper.writeValueAsString(input);
 
         // Test REST endpoint met gegenereerde data

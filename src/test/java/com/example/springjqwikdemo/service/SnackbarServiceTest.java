@@ -15,7 +15,7 @@ import net.jqwik.api.constraints.Size;
  *   <li>@ForAll: Genereert automatisch willekeurige testdata</li>
  *   <li>@Size: Beperkt collectiegroottes (lijsten, sets, etc.)</li>
  *   <li>@From: Gebruikt aangepaste arbitraries om specifieke data te genereren</li>
- *   <li>@Provide: Cre?ert aangepaste data generators</li>
+ *   <li>@Provide: Creëert aangepaste data generators</li>
  * </ul>
  */
 @PropertyDefaults(tries = 100, generation = GenerationMode.RANDOMIZED)
@@ -25,7 +25,7 @@ class SnackbarServiceTest {
 
   /**
    * Demonstreert: @ForAll met @Size constraint voor lijsten
-   * 
+   *
    * jqwik genereert automatisch 100 willekeurige lijsten van strings (grootte 0-10)
    * en verifieert dat de property geldt voor allemaal.
    */
@@ -46,7 +46,7 @@ class SnackbarServiceTest {
 
   /**
    * Demonstreert: Meerdere @ForAll parameters met verschillende constraints
-   * 
+   *
    * jqwik genereert combinaties van twee onafhankelijke willekeurige lijsten
    * en test de property voor alle combinaties.
    */
@@ -69,8 +69,8 @@ class SnackbarServiceTest {
 
   /**
    * Demonstreert: Aangepaste arbitrary met @From en @Provide
-   * 
-   * Gebruikt een aangepaste data generator (@Provide) om gefilterde testdata te cre?ren.
+   *
+   * Gebruikt een aangepaste data generator (@Provide) om gefilterde testdata te creëren.
    * Dit is krachtiger dan simpele constraints - we kunnen precies
    * de data genereren die we nodig hebben voor ons testscenario.
    */
@@ -86,8 +86,8 @@ class SnackbarServiceTest {
 
   /**
    * Aangepaste data generator met jqwik's Arbitraries API.
-   * 
-   * Dit demonstreert hoe je domein-specifieke testdata generators cre?ert
+   *
+   * Dit demonstreert hoe je domein-specifieke testdata generators creëert
    * die waarden produceren die voldoen aan specifieke criteria (in dit geval, woorden
    * die NIET de doelwoorden zijn).
    */

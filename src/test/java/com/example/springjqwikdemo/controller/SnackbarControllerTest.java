@@ -29,7 +29,7 @@ import org.springframework.test.web.servlet.MockMvc;
  * </ul>
  *
  * <p>Dit laat zien hoe jqwik gebruikt kan worden voor integratietests, niet alleen unit tests.
- * We genereren willekeurige HTTP request bodies en verifi?ren dat de API correct gedraagt.
+ * We genereren willekeurige HTTP request bodies en verifiëren dat de API correct gedraagt.
  */
 @JqwikSpringSupport
 @WebMvcTest(SnackbarController.class)
@@ -50,7 +50,7 @@ class SnackbarControllerTest {
 
   /**
    * Demonstreert: @Assume voor het filteren van testgevallen
-   * 
+   *
    * @Assume laat ons testgevallen overslaan die niet aan onze criteria voldoen.
    * jqwik genereert nieuwe data totdat het gevallen vindt die de assumptie doorstaan.
    * Dit is handig voor het testen van specifieke scenario's zonder handmatige filtering.
@@ -80,7 +80,7 @@ class SnackbarControllerTest {
 
   /**
    * Demonstreert: Property-based testing van REST API's
-   * 
+   *
    * jqwik genereert willekeurige request bodies en we verifieren dat de API
    * correct reageert. Dit test veel meer scenario's dan
    * traditionele voorbeeld-gebaseerde tests.
@@ -113,7 +113,7 @@ class SnackbarControllerTest {
 
   /**
    * Demonstreert: Arbitraries programmatisch gebruiken
-   * 
+   *
    * Soms moet je arbitraries gebruiken buiten @ForAll parameters.
    * Dit laat zien hoe je handmatig kunt samplen uit een arbitrary.
    */
