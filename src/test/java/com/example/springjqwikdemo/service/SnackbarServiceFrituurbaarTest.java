@@ -21,7 +21,7 @@ import net.jqwik.api.constraints.Size;
  * <p>De DomainArbitraryProvider genereert automatisch instanties van Frituurbaar
  * en zijn subtypes, waardoor het makkelijk is om te testen met domeinobjecten.
  */
-@PropertyDefaults(tries = 50, generation = GenerationMode.RANDOMIZED)
+@PropertyDefaults(tries = 50, generation = GenerationMode.RANDOMIZED, edgeCases = EdgeCasesMode.FIRST)
 class SnackbarServiceFrituurbaarTest {
 
   private final SnackbarService service = new SnackbarService();
