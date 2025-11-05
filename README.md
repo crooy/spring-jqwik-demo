@@ -440,10 +440,10 @@ Voor gedetailleerde API documentatie, zie [docs/api.md](docs/api.md).
 
 De applicatie demonstreert jqwik testing met een eenvoudige snackbar service:
 
-- **POST /api/bakken**: Verwerkt strings, converteert "aardappel" en "pieper" naar "friet"
+- **POST /api/bakken**: Verwerkt strings, converteert "aardappel" en "pieper" naar "friet" (aantal keer de lengte van het woord)
 - **POST /api/frituren**: Verwerkt snack objecten (JSON) en genereert gefrituurde snack beschrijvingen
 
-Het domeinmodel gebruikt sealed interfaces (`Frituurbaar`) met records voor verschillende snack types.
+Het domeinmodel gebruikt sealed interfaces (`Frituurbaar`) met records voor verschillende snack types. De logica is opzettelijk eenvoudig gehouden om de focus te leggen op jqwik features in plaats van complexe business rules.
 
 ## Verder Lezen
 

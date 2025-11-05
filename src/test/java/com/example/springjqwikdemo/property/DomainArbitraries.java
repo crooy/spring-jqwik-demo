@@ -84,10 +84,4 @@ public class DomainArbitraries {
         bereklauw());
   }
 
-  public static Arbitrary<java.util.List<Frituurbaar>> frituurbaarLists() {
-    return frituurbaar()
-        .list()
-        .ofMinSize(0)
-        .ofMaxSize(20);
-  }
 }

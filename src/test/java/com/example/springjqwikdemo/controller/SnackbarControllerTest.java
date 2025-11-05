@@ -148,7 +148,7 @@ class SnackbarControllerTest {
 
   /**
    * Aangepaste arbitrary voor het genereren van doelwoorden.
-   * Laat zien hoe je domein-specifieke generators cre?ert.
+   * Laat zien hoe je domein-specifieke generators creëert.
    */
   @Provide
   Arbitrary<String> aardappels() {

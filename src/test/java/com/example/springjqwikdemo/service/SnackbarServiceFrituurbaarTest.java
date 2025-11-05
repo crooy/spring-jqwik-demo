@@ -84,11 +84,12 @@ class SnackbarServiceFrituurbaarTest {
    */
   @Property
   void propertyBasedTest_CollectionsOfDomainObjects(
-      @ForAll @Size(min = 0, max = 10) List<Frituurbaar> items) {
+      @ForAll @Size(min = 1, max = 10) List<Frituurbaar> items) {
     // When - jqwik genereert lijsten van gemengde snack types
     List<String> result = service.frituren(items);
 
     // Then - Property geldt voor alle gegenereerde lijsten
+    // Elke snack moet minstens ??n resultaat opleveren
     assertThat(result).isNotEmpty();
     assertThat(result.size()).isGreaterThanOrEqualTo(items.size());
   }

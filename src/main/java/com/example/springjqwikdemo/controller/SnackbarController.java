@@ -29,7 +29,7 @@ public class SnackbarController {
 
   @PostMapping("/frituren")
   public ResponseEntity<List<String>> processSnacks(@RequestBody List<Frituurbaar> snacks) {
-    List<String> result = snackbarService.processSnacks(snacks);
+    List<String> result = snackbarService.frituren(snacks);
     return ResponseEntity.ok(result);
   }
 }
